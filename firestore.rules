@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Checks if the user is authenticated (staff/organisateur)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Validates new registration document schema
+    function isValidRegistration(data) {
+      return data.id is string
+        && data.firstName is string
+        && data.lastName is string
+        && data.whatsappPhone is string
+        && data.checkedIn is bool
+        && (data.email == null || data.email is string);
+    }
+
+    // Collection: inscrits
+    match /inscrits/{registrationId} {
+      // Le public peut lire un document spécifique (pour afficher son badge via l'ID)
+      // et le staff authentifié peut lire l'ensemble des documents (liste admin)
+      allow get: if true;
+      allow list: if isAuthenticated();
+
+      // Le public peut UNIQUEMENT créer une inscription (formulaire)
+      allow create: if isValidRegistration(request.resource.data)
+                    && request.resource.data.id == registrationId
+                    && request.resource.data.checkedIn == false;
+
+      // Seul le staff authentifié peut modifier le statut (émargement)
+      allow update: if isAuthenticated();
+
+      // Seul le staff authentifié peut supprimer une inscription
+      allow delete: if isAuthenticated();
+    }
+
+    // Collection: emargements_logs (historique des scans)
+    match /emargements_logs/{logId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

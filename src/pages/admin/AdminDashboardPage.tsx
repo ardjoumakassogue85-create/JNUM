@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  subscribeToRegistrations,
   getAllRegistrations,
   getRegistrationStats,
   exportRegistrationsCsv,
   updateRegistrationStatus,
   checkInParticipant,
 } from '../../services/registrationService';
+import { getFirebaseAuth } from '../../services/firebase';
+import { signOut } from 'firebase/auth';
 import { Registration, RegistrationStats } from '../../types';
 import { EVENT_CONFIG } from '../../config/event';
 import {
@@ -38,28 +41,34 @@ export const AdminDashboardPage: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const loadData = () => {
-    const list = getAllRegistrations();
-    setRegistrations(list);
-    setStats(getRegistrationStats());
-  };
-
   useEffect(() => {
     // Check auth
-    const auth = localStorage.getItem('jnum_admin_auth');
-    if (!auth) {
+    const authStorage = localStorage.getItem('jnum_admin_auth');
+    if (!authStorage) {
       navigate('/admin/login');
       return;
     }
-    loadData();
 
-    window.addEventListener('jnum_registrations_updated', loadData);
+    // Subscribe to real-time Firestore updates
+    const unsubscribe = subscribeToRegistrations((data) => {
+      setRegistrations(data);
+      setStats(getRegistrationStats());
+    });
+
     return () => {
-      window.removeEventListener('jnum_registrations_updated', loadData);
+      unsubscribe();
     };
   }, [navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const auth = getFirebaseAuth();
+    if (auth) {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.warn('SignOut error:', err);
+      }
+    }
     localStorage.removeItem('jnum_admin_auth');
     navigate('/admin/login');
   };
@@ -68,13 +77,12 @@ export const AdminDashboardPage: React.FC = () => {
     if (!reg.checkedIn) {
       await checkInParticipant(reg.id, 'Admin Dashboard');
     } else {
-      updateRegistrationStatus(reg.id, {
+      await updateRegistrationStatus(reg.id, {
         checkedIn: false,
         checkedInAt: undefined,
         checkedInBy: undefined,
       });
     }
-    loadData();
   };
 
   // Filter registrations

@@ -1,22 +1,20 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { getAuth, Auth } from 'firebase/auth';
-import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getAuth, Auth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
-// Environment variables or fallback placeholders
+// Environment variables or fallback
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSy_DEMO_PLACEHOLDER_KEY",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "jnum-2026.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "jnum-2026",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "jnum-2026.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1234567890",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1234567890:web:abcdef123456",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
 let auth: Auth | null = null;
-let storage: FirebaseStorage | null = null;
 
 export const isFirebaseConfigured = (): boolean => {
   return Boolean(
@@ -26,7 +24,10 @@ export const isFirebaseConfigured = (): boolean => {
   );
 };
 
-export function getFirebaseApp(): FirebaseApp {
+export function getFirebaseApp(): FirebaseApp | null {
+  if (!isFirebaseConfigured()) {
+    return null;
+  }
   if (!app) {
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
@@ -37,23 +38,26 @@ export function getFirebaseApp(): FirebaseApp {
   return app;
 }
 
-export function getFirebaseDb(): Firestore {
+export function getFirebaseDb(): Firestore | null {
   if (!db) {
-    db = getFirestore(getFirebaseApp());
+    const fApp = getFirebaseApp();
+    if (fApp) {
+      db = getFirestore(fApp);
+    }
   }
   return db;
 }
 
-export function getFirebaseAuth(): Auth {
+export function getFirebaseAuth(): Auth | null {
   if (!auth) {
-    auth = getAuth(getFirebaseApp());
+    const fApp = getFirebaseApp();
+    if (fApp) {
+      auth = getAuth(fApp);
+      setPersistence(auth, browserLocalPersistence).catch((err) => {
+        console.warn('Auth persistence initialization warning:', err);
+      });
+    }
   }
   return auth;
 }
 
-export function getFirebaseStorage(): FirebaseStorage {
-  if (!storage) {
-    storage = getStorage(getFirebaseApp());
-  }
-  return storage;
-}

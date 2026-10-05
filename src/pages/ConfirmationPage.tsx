@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getRegistrationById } from '../services/registrationService';
+import { fetchRegistrationById } from '../services/registrationService';
 import { Registration } from '../types';
 import { ParticipantBadge } from '../components/badge/ParticipantBadge';
 import { EVENT_CONFIG } from '../config/event';
@@ -24,11 +24,23 @@ export const ConfirmationPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
-      const reg = getRegistrationById(id);
-      setRegistration(reg);
+    let isMounted = true;
+    async function loadRegistration() {
+      if (id) {
+        const reg = await fetchRegistrationById(id);
+        if (isMounted) {
+          setRegistration(reg);
+        }
+      }
+      if (isMounted) {
+        setLoading(false);
+      }
     }
-    setLoading(false);
+    loadRegistration();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   if (loading) {

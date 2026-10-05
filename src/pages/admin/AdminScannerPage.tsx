@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import jsQR from 'jsqr';
 import {
+  subscribeToRegistrations,
   getAllRegistrations,
   checkInParticipant,
   verifyQrSignature,
@@ -35,6 +36,12 @@ export const AdminScannerPage: React.FC = () => {
   const [manualQuery, setManualQuery] = useState<string>('');
   const [scannedCount, setScannedCount] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+
+  // Subscribe to real-time registrations
+  useEffect(() => {
+    const unsub = subscribeToRegistrations(() => {});
+    return () => unsub();
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

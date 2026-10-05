@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import {
-  getRegistrationById,
+  fetchRegistrationById,
   verifyQrSignature,
   checkInParticipant,
 } from '../services/registrationService';
@@ -40,8 +40,11 @@ export const VerifyPage: React.FC = () => {
     const valid = verifyQrSignature(id, token);
     setIsValidSignature(valid);
 
-    const reg = getRegistrationById(id);
-    setRegistration(reg);
+    async function loadReg() {
+      const reg = await fetchRegistrationById(id as string);
+      setRegistration(reg);
+    }
+    loadReg();
   }, [id, token]);
 
   const handlePerformCheckIn = async () => {

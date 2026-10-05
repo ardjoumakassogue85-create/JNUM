@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { JnumLogo } from '../../components/common/JnumLogo';
 import { Shield, ArrowRight, AlertCircle } from 'lucide-react';
+import { getFirebaseAuth } from '../../services/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +12,7 @@ export const AdminLoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -18,31 +20,57 @@ export const AdminLoginPage: React.FC = () => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    setTimeout(() => {
-      // Admin account
-      const isAdmin = cleanEmail === 'sc3@jnum.org' && cleanPassword === 'Jnum2026';
-      // Agent d'accueil account
-      const isScanner = cleanEmail === 'scanner@jnum-event.org' && cleanPassword === 'Scan2026';
+    try {
+      const auth = getFirebaseAuth();
+      if (auth) {
+        // Authenticate via Firebase Authentication
+        const cred = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+        const user = cred.user;
+        const role = cleanEmail.includes('scanner') ? 'scanner' : 'admin';
 
-      if (isAdmin || isScanner) {
         localStorage.setItem(
           'jnum_admin_auth',
           JSON.stringify({
+            uid: user.uid,
             email: cleanEmail,
-            role: isScanner ? 'scanner' : 'admin',
+            role,
             loggedAt: new Date().toISOString(),
           })
         );
-        if (isScanner) {
+
+        if (role === 'scanner') {
           navigate('/admin/scan');
         } else {
           navigate('/admin/dashboard');
         }
-      } else {
-        setError('Email ou mot de passe incorrect');
+        return;
       }
-      setLoading(false);
-    }, 400);
+    } catch (firebaseErr: any) {
+      console.warn('Firebase Auth attempt:', firebaseErr?.code || firebaseErr?.message);
+    }
+
+    // Direct fallback verification
+    const isAdmin = cleanEmail === 'sc3@jnum.org' && cleanPassword === 'Jnum2026';
+    const isScanner = cleanEmail === 'scanner@jnum-event.org' && cleanPassword === 'Scan2026';
+
+    if (isAdmin || isScanner) {
+      localStorage.setItem(
+        'jnum_admin_auth',
+        JSON.stringify({
+          email: cleanEmail,
+          role: isScanner ? 'scanner' : 'admin',
+          loggedAt: new Date().toISOString(),
+        })
+      );
+      if (isScanner) {
+        navigate('/admin/scan');
+      } else {
+        navigate('/admin/dashboard');
+      }
+    } else {
+      setError('Email ou mot de passe incorrect');
+    }
+    setLoading(false);
   };
 
   return (
