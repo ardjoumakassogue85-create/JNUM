@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { JnumLogo } from '../../components/common/JnumLogo';
-import { EVENT_CONFIG } from '../../config/event';
-import { Shield, KeyRound, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Shield, ArrowRight, AlertCircle } from 'lucide-react';
 
 export const AdminLoginPage: React.FC = () => {
-  const [email, setEmail] = useState('organisateur@jnum-event.org');
-  const [password, setPassword] = useState('Jnum2026!Admin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,20 +15,31 @@ export const AdminLoginPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // Authentication verification (Demo / Staff credentials)
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     setTimeout(() => {
-      if (email.includes('jnum') || email === 'organisateur@jnum-event.org' || password.length >= 6) {
+      // Admin account
+      const isAdmin = cleanEmail === 'sc3@jnum.org' && cleanPassword === 'Jnum2026';
+      // Agent d'accueil account
+      const isScanner = cleanEmail === 'scanner@jnum-event.org' && cleanPassword === 'Scan2026';
+
+      if (isAdmin || isScanner) {
         localStorage.setItem(
           'jnum_admin_auth',
           JSON.stringify({
-            email,
-            role: email.includes('scanner') ? 'scanner' : 'admin',
+            email: cleanEmail,
+            role: isScanner ? 'scanner' : 'admin',
             loggedAt: new Date().toISOString(),
           })
         );
-        navigate('/admin/dashboard');
+        if (isScanner) {
+          navigate('/admin/scan');
+        } else {
+          navigate('/admin/dashboard');
+        }
       } else {
-        setError('Identifiants incorrects. Veuillez réessayer.');
+        setError('Email ou mot de passe incorrect');
       }
       setLoading(false);
     }, 400);
@@ -64,7 +74,7 @@ export const AdminLoginPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} autoComplete="off" className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-neutral-700 mb-1">
               Adresse email staff
@@ -73,6 +83,8 @@ export const AdminLoginPage: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="votre.email@exemple.org"
+              autoComplete="off"
               required
               className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#075B22]"
             />
@@ -86,17 +98,11 @@ export const AdminLoginPage: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              autoComplete="new-password"
               required
               className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#075B22]"
             />
-          </div>
-
-          <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-[#075B22]">
-            💡 <strong>Comptes préconfigurés :</strong>
-            <br />
-            • Administrateur : <code>organisateur@jnum-event.org</code> / <code>Jnum2026!Admin</code>
-            <br />
-            • Agent d'accueil : <code>scanner@jnum-event.org</code> / <code>Scan2026</code>
           </div>
 
           <button

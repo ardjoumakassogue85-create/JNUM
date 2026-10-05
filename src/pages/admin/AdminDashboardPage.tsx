@@ -93,6 +93,14 @@ export const AdminDashboardPage: React.FC = () => {
     return true;
   });
 
+  const dominantCategory = (() => {
+    if (!stats || stats.totalRegistered === 0) return 'Aucun';
+    const entries = Object.entries(stats.byCategory);
+    if (entries.length === 0) return 'Aucun';
+    entries.sort((a, b) => b[1] - a[1]);
+    return entries[0][0];
+  })();
+
   return (
     <div className="min-h-screen bg-[#F7FAF7] pb-16">
       {/* Top Admin Header Bar */}
@@ -210,7 +218,7 @@ export const AdminDashboardPage: React.FC = () => {
                   Profil Dominant
                 </span>
                 <p className="text-xl font-black font-display text-[#FF5A00] mt-1 truncate max-w-[170px]">
-                  Professionnels
+                  {dominantCategory}
                 </p>
                 <p className="text-xs text-neutral-500 font-semibold mt-2">
                   Étudiants : {stats.byCategory['Étudiant'] || 0} • Pros : {stats.byCategory['Professionnel'] || 0}
@@ -378,8 +386,18 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
 
           {filtered.length === 0 && (
-            <div className="py-12 text-center text-neutral-400 text-xs">
-              Aucun inscrit trouvé pour ces critères de recherche.
+            <div className="py-16 text-center text-neutral-500 text-xs sm:text-sm">
+              <Users className="w-8 h-8 mx-auto text-neutral-300 mb-2" />
+              <p className="font-semibold text-neutral-600">
+                {registrations.length === 0
+                  ? 'Aucun participant inscrit pour le moment.'
+                  : 'Aucun inscrit trouvé pour ces critères de recherche.'}
+              </p>
+              {registrations.length === 0 && (
+                <p className="text-[11px] text-neutral-400 mt-1">
+                  Les nouvelles inscriptions via le formulaire apparaîtront ici en temps réel.
+                </p>
+              )}
             </div>
           )}
         </div>

@@ -2,8 +2,8 @@ import { Registration, RegistrationFormData, CheckInLog } from '../types';
 import { EVENT_CONFIG } from '../config/event';
 import { DEMO_REGISTRATIONS } from '../data/seedData';
 
-const STORAGE_KEY = 'jnum_registrations_v1';
-const CHECKIN_LOGS_KEY = 'jnum_checkin_logs_v1';
+const STORAGE_KEY = 'jnum_registrations_v2';
+const CHECKIN_LOGS_KEY = 'jnum_checkin_logs_v2';
 
 // Simple HMAC-like deterministic hash signature generator for offline & online verification
 export function generateQrSignature(id: string, secret: string = EVENT_CONFIG.security.hmacSecret): string {
@@ -167,7 +167,7 @@ export function getRegistrationStats() {
     totalRegistered: all.length,
     totalCheckedIn: checkedIn,
     checkInRate: all.length > 0 ? Math.round((checkedIn / all.length) * 100) : 0,
-    whatsappSent: whatsappSent || Math.floor(all.length * 0.88),
+    whatsappSent,
     byCategory,
   };
 }
