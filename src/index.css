@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: "Sora", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #F7FAF7;
+    color: #111827;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Islamic Geometric Filigree (8-pointed stars / Girih subtle pattern) */
+.bg-islamic-pattern {
+  background-image: radial-gradient(#075B22 0.75px, transparent 0.75px), radial-gradient(#FF5A00 0.75px, #F7FAF7 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+}
+
+.bg-islamic-girih {
+  background-color: #F7FAF7;
+  background-image: 
+    linear-gradient(30deg, #075b220a 12%, transparent 12.5%, transparent 87%, #075b220a 87.5%, #075b220a),
+    linear-gradient(150deg, #075b220a 12%, transparent 12.5%, transparent 87%, #075b220a 87.5%, #075b220a),
+    linear-gradient(30deg, #075b220a 12%, transparent 12.5%, transparent 87%, #075b220a 87.5%, #075b220a),
+    linear-gradient(150deg, #075b220a 12%, transparent 12.5%, transparent 87%, #075b220a 87.5%, #075b220a),
+    linear-gradient(60deg, #ff5a0008 25%, transparent 25.5%, transparent 75%, #ff5a0008 75%, #ff5a0008),
+    linear-gradient(60deg, #ff5a0008 25%, transparent 25.5%, transparent 75%, #ff5a0008 75%, #ff5a0008);
+  background-size: 80px 140px;
+  background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+}
+
+.bg-circuit-pattern {
+  background-image: radial-gradient(rgba(7, 91, 34, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Print styles for badge and program */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+

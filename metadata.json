@@ -1,0 +1,6 @@
+{
+  "name": "JNUM – Journée Numérique Musulmane",
+  "description": "Site officiel de la Journée Numérique Musulmane (JNUM) : programme interactif, intervenants d'exception, inscription en ligne avec badge QR interactif, envoi WhatsApp et espace organisateur.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
